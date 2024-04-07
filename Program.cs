@@ -13,34 +13,65 @@ namespace Breeze.ChatSummary
 
             Console.WriteLine("Getting Yesterday's Report...");
             var hourlyMessages = await extractor.GetMessagesByHour();
+            var groupedMessages = GroupMessagesByAmount(hourlyMessages, 100, yesterday);
+
             Console.WriteLine("Analyzing Text...");
+            Console.WriteLine("Grouping Messages...");
+
             string output = $"Summary of {yesterday.Date.ToString("d")}\n";
-            foreach (var message in hourlyMessages)
+            output += $"First message at {groupedMessages[0].earliestMessageTimeStamp.ToString("T")}\n";
+            output += $"Last message at {groupedMessages[groupedMessages.Count - 1].latestMessageTimeStamp.ToString("T")}\n";
+            output += $"Total Messages: {groupedMessages.Sum(x => x.Count)}\n";
+            output += "\n";
+            foreach (var group in groupedMessages)
             {
-                if (message.Key.Date == yesterday.Date)
-                {
-                    Console.WriteLine($"{message.Value.Count} Messages between {message.Key.TimeOfDay} and {message.Key.TimeOfDay + new TimeSpan(6,0,0)}");
-                    output += $"{message.Value.Count} Messages between {message.Key.TimeOfDay} and {message.Key.TimeOfDay + new TimeSpan(6, 0, 0)}";
-                    output += "\n";
-                    output += await azureLanguage.AnalyzeTextAsync(GetConsolidatedMessages(message.Value));
-                    output += "\n\n";
-                }
+                output += $"{group.Count} Messages between {group.duration}\n";
+                output += await azureLanguage.AnalyzeTextAsync(group.value);
+                output += "\n\n";
             }
 
+            Console.WriteLine(output);
             Console.WriteLine("Posting to Matrix...");
             MatrixMessagePoster poster = new MatrixMessagePoster();
             await poster.PostMessage(output);
         }
 
-        static string GetConsolidatedMessages(List<MatrixMessage> messages)
+        //method to combine multiple MatrixMessageGroup objects into a smaller number of MatrixMessageGroup objects by ensuring that each object has a maxixum number of messages
+        private static List<MatrixMessageGroup> GroupMessagesByAmount(Dictionary<DateTime, MatrixMessageGroup> dictionary, int maxAmountPerEntry, DateTime dateToGroup)
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (var message in messages)
+            List<MatrixMessageGroup> groupedMessages = new List<MatrixMessageGroup>();
+            MatrixMessageGroup currentGroup = new MatrixMessageGroup();
+
+            foreach (var item in dictionary)
             {
-                sb.Append($"{message.value}");
-                sb.Append(" ");
+                if (item.Key.Date != dateToGroup.Date)
+                {
+                    continue;
+                }
+                if (currentGroup.Count + item.Value.Count <= maxAmountPerEntry)
+                {
+                    currentGroup = currentGroup + item.Value;
+                }
+                else
+                {
+                    groupedMessages.Add(currentGroup);
+                    currentGroup = new MatrixMessageGroup();
+                    currentGroup = item.Value;
+                }
             }
-            return sb.ToString();
+            if (currentGroup.Count > 0)
+            {
+                groupedMessages.Add(currentGroup);
+            }
+
+            foreach (var item in groupedMessages)
+            {
+                item.UpdateDuration();
+            }
+
+            return groupedMessages;
+
         }
+
     }
 }

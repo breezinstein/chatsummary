@@ -9,7 +9,7 @@ namespace Breeze.ChatSummary
     {
         readonly HttpClient client = new HttpClient();
         private string lastMessageToken;
-        Dictionary<DateTime, List<MatrixMessage>> dictionary = new Dictionary<DateTime, List<MatrixMessage>>();
+        Dictionary<DateTime, MatrixMessageGroup> dictionary = new Dictionary<DateTime, MatrixMessageGroup>();
         private IProgramSettings matrixSettings { get; set; }
         public MatrixMessageExtractor() {
             matrixSettings = new MatrixSettings();
@@ -74,7 +74,7 @@ namespace Breeze.ChatSummary
             return messages;
         }
 
-        public async Task<Dictionary<DateTime, List<MatrixMessage>>> GetMessagesByHour()
+        public async Task<Dictionary<DateTime, MatrixMessageGroup>> GetMessagesByHour()
         {
             string? accessToken = await GetAccessToken();
 
@@ -88,41 +88,24 @@ namespace Breeze.ChatSummary
                 messages.AddRange(remainingMessages);
             }
 
-            var groupedMessages = GroupMessagesBySixHourChunks(messages);
+            var groupedMessages = GroupMessagesByHour(messages);
             return groupedMessages;
         }
 
-        private Dictionary<DateTime, List<MatrixMessage>> GroupMessagesByHour(List<MatrixMessage> messages)
+        private Dictionary<DateTime, MatrixMessageGroup> GroupMessagesByHour(List<MatrixMessage> messages)
         {
             foreach (var message in messages)
             {
-                var date = DateTime.Parse(message.TimeStamp);
+                var date = message.TimeStamp;
                 var hour = new DateTime(date.Year, date.Month, date.Day, date.Hour, 0, 0);
                 if (dictionary.ContainsKey(hour))
                 {
-                    dictionary[hour].Add(message);
+                    dictionary[hour].AddMessage(message);
                 }
                 else
                 {
-                    dictionary.Add(hour, new List<MatrixMessage> { message });
-                }
-            }
-            return dictionary;
-        }
-
-        public Dictionary<DateTime, List<MatrixMessage>> GroupMessagesBySixHourChunks(List<MatrixMessage> messages)
-        {
-            foreach (var message in messages)
-            {
-                var date = DateTime.Parse(message.TimeStamp);
-                var sixHourChunk = new DateTime(date.Year, date.Month, date.Day, date.Hour / 6 * 6, 0, 0);
-                if (dictionary.ContainsKey(sixHourChunk))
-                {
-                    dictionary[sixHourChunk].Add(message);
-                }
-                else
-                {
-                    dictionary.Add(sixHourChunk, new List<MatrixMessage> { message });
+                    dictionary.Add(hour, new MatrixMessageGroup());
+                    dictionary[hour].AddMessage(message);
                 }
             }
             return dictionary.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
@@ -185,13 +168,13 @@ namespace Breeze.ChatSummary
             return result;
         }
 
-        private string DateTimeinWATFromEpoch(long epoch)
+        private DateTime DateTimeinWATFromEpoch(long epoch)
         {
             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddMilliseconds(epoch);
             TimeZoneInfo wAT = TimeZoneInfo.FindSystemTimeZoneById("W. Central Africa Standard Time");
             DateTime wATDateTime = TimeZoneInfo.ConvertTimeFromUtc(dateTime, wAT);
-            return wATDateTime.ToString();
+            return wATDateTime;
         }
 
         private string ConvertSender(string data)
