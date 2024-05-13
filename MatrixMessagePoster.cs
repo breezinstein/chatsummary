@@ -6,7 +6,7 @@ namespace Breeze.ChatSummary
     /// <summary>
     /// This class is responsible for posting messages to a Matrix room.
     /// </summary>
-    public class MatrixMessagePoster
+    public class MatrixMessagePoster: IMessagePoster
     {
         private IProgramSettings matrixSettings { get; set; }
         public MatrixMessagePoster()
@@ -14,7 +14,7 @@ namespace Breeze.ChatSummary
             matrixSettings = new MatrixSettings();
         }
 
-        public async Task PostMessage(string message)
+        public async Task PostMessageAsync(string message)
         {
             string? accessToken = await GetAccessToken();
             string roomId = GetRoomId(accessToken);

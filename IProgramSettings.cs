@@ -10,5 +10,6 @@ namespace Breeze.ChatSummary
         string USERNAME { get; set; }
         string AZURE_API_KEY { get; set; }
         string AZURE_API_ENDPOINT { get; set; }
+        string OLLAMA_API_ENDPOINT { get; set; }
     }
 }

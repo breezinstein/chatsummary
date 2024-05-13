@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Breeze.ChatSummary
 {
-    public class AzureLanguage
+    public class AzureLanguage: IMessageAnalyzer
     {
         private IProgramSettings matrixSettings;
 
