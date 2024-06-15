@@ -11,9 +11,11 @@ namespace Breeze.ChatSummary
         private string lastMessageToken;
         Dictionary<DateTime, MatrixMessageGroup> dictionary = new Dictionary<DateTime, MatrixMessageGroup>();
         private IProgramSettings matrixSettings { get; set; }
-        public MatrixMessageExtractor() {
+        public MatrixMessageExtractor()
+        {
             matrixSettings = new MatrixSettings();
-         }
+            lastMessageToken = string.Empty;
+        }
         private async Task<string?> GetAccessToken()
         {
             if (matrixSettings.ACCESS_TOKEN != "")
@@ -146,26 +148,13 @@ namespace Breeze.ChatSummary
                 {
                     filteredMessages.Add(new MatrixMessage
                     {
-                        Sender = ConvertSender(message["sender"].ToString()),
+                        Sender = message["sender"].ToString(),
                         TimeStamp = DateTimeinWATFromEpoch((long)message["origin_server_ts"]),
-                        Content = RemovePattern(message["content"]?["body"]?.ToString())
+                        Content = message["content"]?["body"]?.ToString()
                     });
                 }
             }
             return filteredMessages;
-        }
-
-
-        private string RemovePattern(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                return "";
-            }
-            var pattern = @"@\w+_\d+:chat\.\w+\.\w+";
-            var regex = new Regex(pattern);
-            var result = regex.Replace(text, "");
-            return result;
         }
 
         private DateTime DateTimeinWATFromEpoch(long epoch)
@@ -175,14 +164,6 @@ namespace Breeze.ChatSummary
             TimeZoneInfo wAT = TimeZoneInfo.FindSystemTimeZoneById("W. Central Africa Standard Time");
             DateTime wATDateTime = TimeZoneInfo.ConvertTimeFromUtc(dateTime, wAT);
             return wATDateTime;
-        }
-
-        private string ConvertSender(string data)
-        {
-            var startIndex = data.IndexOf("_") + 1;
-            var endIndex = data.IndexOf(":");
-            var result = data.Substring(startIndex, endIndex - startIndex);
-            return "+" + result;
         }
     }
 }

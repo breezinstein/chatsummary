@@ -14,7 +14,7 @@ namespace Breeze.ChatSummary
 
             Console.WriteLine("Getting Yesterday's Report...");
             var hourlyMessages = await extractor.GetMessagesByHour();
-            var groupedMessages = GroupMessagesByAmount(hourlyMessages, 100, yesterday);
+            var groupedMessages = GroupMessagesByAmount(hourlyMessages, 500, yesterday);
 
             Console.WriteLine("Analyzing Text...");
             Console.WriteLine("Grouping Messages...");
