@@ -8,17 +8,17 @@ namespace Breeze.ChatSummary
 {
     public class AzureLanguage: IMessageAnalyzer
     {
-        private IProgramSettings matrixSettings;
+        private AzureAPI azureAPISettings;
 
-        public AzureLanguage()
+        public AzureLanguage(AzureAPI _azureAPISettings)
         {
-            matrixSettings = new MatrixSettings();
+            azureAPISettings = _azureAPISettings;
         }
 
         public async Task<string> AnalyzeTextAsync(string textToAnalyze)
         {
-            AzureKeyCredential credential = new(matrixSettings.AZURE_API_KEY);
-            var client = new TextAnalyticsClient(new Uri(matrixSettings.AZURE_API_ENDPOINT), credential);
+            AzureKeyCredential credential = new(azureAPISettings.API_KEY);
+            var client = new TextAnalyticsClient(new Uri(azureAPISettings.API_ENDPOINT_URL), credential);
             var options = new AbstractiveSummarizeOptions
             {
                 SentenceCount = 7

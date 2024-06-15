@@ -10,6 +10,14 @@ namespace Breeze.ChatSummary
         List<MatrixMessage> messages = new List<MatrixMessage>();
         public MatrixMessageGroup() { }
 
+        public void AddMessages(List<MatrixMessage> _messages)
+        {
+            foreach (MatrixMessage m in messages)
+            {
+                AddMessage(m);
+            }
+        }
+
         public void AddMessage(MatrixMessage message)
         {
             messages.Add(message);

@@ -8,6 +8,6 @@ namespace Breeze.ChatSummary
 {
     public interface IMessagePoster
     {
-        Task PostMessageAsync(string message);
+        Task PostMessageAsync(string message, string roomID);
     }
 }

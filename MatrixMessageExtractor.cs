@@ -10,23 +10,25 @@ namespace Breeze.ChatSummary
         readonly HttpClient client = new HttpClient();
         private string lastMessageToken;
         Dictionary<DateTime, MatrixMessageGroup> dictionary = new Dictionary<DateTime, MatrixMessageGroup>();
-        private IProgramSettings matrixSettings { get; set; }
-        public MatrixMessageExtractor()
+        private MatrixConfig matrixConfig { get; set; }
+        private Room roomToAnalyze{get;set;}
+        public MatrixMessageExtractor(MatrixConfig _matrixConfig, Room _roomToAnalyze)
         {
-            matrixSettings = new MatrixSettings();
+            matrixConfig = _matrixConfig;
+            roomToAnalyze = _roomToAnalyze;
             lastMessageToken = string.Empty;
         }
         private async Task<string?> GetAccessToken()
         {
-            if (matrixSettings.ACCESS_TOKEN != "")
+            if (matrixConfig.ACCESS_TOKEN != "")
             {
-                return matrixSettings.ACCESS_TOKEN;
+                return matrixConfig.ACCESS_TOKEN;
             }
             else
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync($"{matrixSettings.HOMESERVER}/r0/login");
+                    HttpResponseMessage response = await client.GetAsync($"{matrixConfig.HOMESERVER}/r0/login");
                     string responseBody = await response.Content.ReadAsStringAsync();
                     dynamic json = JsonConvert.DeserializeObject(responseBody);
                     string flowType = json.flows[0].type;
@@ -36,11 +38,11 @@ namespace Breeze.ChatSummary
                         var payload = new
                         {
                             type = "m.login.password",
-                            user = matrixSettings.USERNAME,
-                            password = matrixSettings.PASSWORD
+                            user = matrixConfig.USERNAME,
+                            password = matrixConfig.PASSWORD
                         };
 
-                        response = await client.PostAsync($"{matrixSettings.HOMESERVER}/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                        response = await client.PostAsync($"{matrixConfig.HOMESERVER}/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
                         responseBody = await response.Content.ReadAsStringAsync();
                         Console.WriteLine($"Response: {responseBody}");
                         json = JsonConvert.DeserializeObject(responseBody);
@@ -115,7 +117,7 @@ namespace Breeze.ChatSummary
 
         private async Task<List<MatrixMessage>> GetMessages(string accessToken, string roomId, int amount)
         {
-            HttpResponseMessage response = await client.GetAsync($"{matrixSettings.HOMESERVER}/r0/rooms/{roomId}/messages?dir=b&limit={amount}&access_token={accessToken}");
+            HttpResponseMessage response = await client.GetAsync($"{matrixConfig.HOMESERVER}/r0/rooms/{roomId}/messages?dir=b&limit={amount}&access_token={accessToken}");
             string responseBody = await response.Content.ReadAsStringAsync();
             dynamic json = JsonConvert.DeserializeObject(responseBody);
             JArray messages = json.chunk;
@@ -127,7 +129,7 @@ namespace Breeze.ChatSummary
 
         private async Task<List<MatrixMessage>> GetMessagesFromToken(string accessToken, string roomId, string start, int amount)
         {
-            HttpResponseMessage response = await client.GetAsync($"{matrixSettings.HOMESERVER}/r0/rooms/{roomId}/messages?from={start}&access_token={accessToken}&dir=b&limit={amount}");
+            HttpResponseMessage response = await client.GetAsync($"{matrixConfig.HOMESERVER}/r0/rooms/{roomId}/messages?from={start}&access_token={accessToken}&dir=b&limit={amount}");
             string responseBody = await response.Content.ReadAsStringAsync();
             dynamic json = JsonConvert.DeserializeObject(responseBody);
             JArray messages = json.chunk;
@@ -136,7 +138,7 @@ namespace Breeze.ChatSummary
 
         private string GetRoomId(string accessToken)
         {
-            return matrixSettings.ROOM_ID_TO_ANALYZE;
+            return roomToAnalyze.ID;
         }
 
         private List<MatrixMessage> FilteredMessages(JArray messages)

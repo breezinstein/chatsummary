@@ -1,0 +1,21 @@
+{
+    "matrixConfig": {
+      "ACCESS_TOKEN": "",
+      "HOMESERVER": "",
+      "PASSWORD": "",
+      "USERNAME": "",
+      "ROOMS": [
+        {
+          "ID": "",
+          "Name": ""
+        }
+      ]
+    },
+    "ollamaApi": {
+      "API_ENDPOINT_URL": ""
+    },
+    "azureApi": {
+      "API_KEY": "",
+      "API_ENDPOINT_URL": ""
+    }
+  }

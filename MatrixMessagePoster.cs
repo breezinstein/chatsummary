@@ -8,16 +8,16 @@ namespace Breeze.ChatSummary
     /// </summary>
     public class MatrixMessagePoster: IMessagePoster
     {
-        private IProgramSettings matrixSettings { get; set; }
-        public MatrixMessagePoster()
+        private MatrixConfig matrixConfig { get; set; }
+        public MatrixMessagePoster(MatrixConfig _matrixConfig)
         {
-            matrixSettings = new MatrixSettings();
+            matrixConfig = _matrixConfig;
         }
 
-        public async Task PostMessageAsync(string message)
+        public async Task PostMessageAsync(string message, string roomID)
         {
             string? accessToken = await GetAccessToken();
-            string roomId = GetRoomId(accessToken);
+            string roomId = roomID;
 
             await SendMessageToMatrix(accessToken, roomId, "m.room.message", message);
         }
@@ -32,7 +32,7 @@ namespace Breeze.ChatSummary
 
                 var messageContent = new StringContent(JsonConvert.SerializeObject(new { msgtype = "m.text", body = message }), Encoding.UTF8, "application/json");
 
-                var response = await client.PutAsync($"{matrixSettings.HOMESERVER}/v3/rooms/{roomId}/send/{eventType}/{txnId}", messageContent);
+                var response = await client.PutAsync($"{matrixConfig.HOMESERVER}/v3/rooms/{roomId}/send/{eventType}/{txnId}", messageContent);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -49,15 +49,15 @@ namespace Breeze.ChatSummary
 
         private async Task<string?> GetAccessToken()
         {
-            if (matrixSettings.ACCESS_TOKEN != "")
+            if (matrixConfig.ACCESS_TOKEN != "")
             {
-                return matrixSettings.ACCESS_TOKEN;
+                return matrixConfig.ACCESS_TOKEN;
             }
             else
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync($"{matrixSettings.HOMESERVER}/r0/login");
+                    HttpResponseMessage response = await client.GetAsync($"{matrixConfig.HOMESERVER}/r0/login");
                     string responseBody = await response.Content.ReadAsStringAsync();
                     dynamic json = JsonConvert.DeserializeObject(responseBody);
                     string flowType = json.flows[0].type;
@@ -67,11 +67,11 @@ namespace Breeze.ChatSummary
                         var payload = new
                         {
                             type = "m.login.password",
-                            user = matrixSettings.USERNAME,
-                            password = matrixSettings.PASSWORD
+                            user = matrixConfig.USERNAME,
+                            password = matrixConfig.PASSWORD
                         };
 
-                        response = await client.PostAsync($"{matrixSettings.HOMESERVER}/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                        response = await client.PostAsync($"{matrixConfig.HOMESERVER}/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
                         responseBody = await response.Content.ReadAsStringAsync();
                         Console.WriteLine($"Response: {responseBody}");
                         json = JsonConvert.DeserializeObject(responseBody);
@@ -83,10 +83,6 @@ namespace Breeze.ChatSummary
                     return null;
                 }
             }
-        }
-        private string GetRoomId(string accessToken)
-        {
-            return matrixSettings.ROOM_ID_TO_POST;
         }
     }
 }
