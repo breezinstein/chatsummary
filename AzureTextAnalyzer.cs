@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Breeze.ChatSummary
 {
-    public class AzureLanguage: IMessageAnalyzer
+    public class AzureTextAnalyzer: IMessageAnalyzer
     {
         private AzureAPI azureAPISettings;
 
-        public AzureLanguage(AzureAPI _azureAPISettings)
+        public AzureTextAnalyzer(AzureAPI _azureAPISettings)
         {
             azureAPISettings = _azureAPISettings;
         }
