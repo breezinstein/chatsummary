@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Breeze.ChatSummary
 {
@@ -28,7 +29,7 @@ namespace Breeze.ChatSummary
                 max_tokens = 1024,
                 messages = new[]
                 {
-                    new { role = "user", content = prompt=textToAnalyze }
+                    new { role = "user", content = prompt+textToAnalyze }
                 }
             };
 
@@ -70,20 +71,29 @@ namespace Breeze.ChatSummary
 
     public class AnthropicResponse
     {
-        public AnthropicContent[] Content { get; set; }
+        [JsonPropertyName("id")]
         public string Id { get; set; }
-        public string Model { get; set; }
-        public string Role { get; set; }
-        public string StopReason { get; set; }
-        public string StopSequence { get; set; }
+
+        [JsonPropertyName("type")]
         public string Type { get; set; }
-        public AnthropicUsage Usage { get; set; }
+
+        [JsonPropertyName("role")]
+        public string Role { get; set; }
+
+        [JsonPropertyName("model")]
+        public string Model { get; set; }
+
+        [JsonPropertyName("content")]
+        public List<AnthropicContent> Content { get; set; }
     }
 
     public class AnthropicContent
     {
-        public string Text { get; set; }
+        [JsonPropertyName("type")]
         public string Type { get; set; }
+
+        [JsonPropertyName("text")]
+        public string Text { get; set; }
     }
 
     public class AnthropicUsage
