@@ -11,8 +11,8 @@ namespace Breeze.ChatSummary
         private string lastMessageToken;
         Dictionary<DateTime, MatrixMessageGroup> dictionary = new Dictionary<DateTime, MatrixMessageGroup>();
         private MatrixConfig matrixConfig { get; set; }
-        private Room roomToAnalyze{get;set;}
-        public MatrixMessageExtractor(MatrixConfig _matrixConfig, Room _roomToAnalyze)
+        private string roomToAnalyze{get;set;}
+        public MatrixMessageExtractor(MatrixConfig _matrixConfig, string _roomToAnalyze)
         {
             matrixConfig = _matrixConfig;
             roomToAnalyze = _roomToAnalyze;
@@ -31,6 +31,7 @@ namespace Breeze.ChatSummary
                     HttpResponseMessage response = await client.GetAsync($"{matrixConfig.HOMESERVER}/r0/login");
                     string responseBody = await response.Content.ReadAsStringAsync();
                     dynamic json = JsonConvert.DeserializeObject(responseBody);
+
                     string flowType = json.flows[0].type;
 
                     if (flowType == "m.login.password")
@@ -59,8 +60,14 @@ namespace Breeze.ChatSummary
         public async Task<List<MatrixMessage>> GetLastMessages(int amount)
         {
             string? accessToken = await GetAccessToken();
+            //null check
+            if (accessToken == null)
+            {
+                Console.WriteLine("Access Token is null");
+                return new List<MatrixMessage>();
+            }
 
-            string roomId = GetRoomId(accessToken);
+            string roomId = roomToAnalyze;
 
             var messages = await GetMessages(accessToken, roomId, amount);
             Console.WriteLine($"Filtered Messages Retrieved: {messages.Count}");
@@ -82,7 +89,7 @@ namespace Breeze.ChatSummary
         {
             string? accessToken = await GetAccessToken();
 
-            string roomId = GetRoomId(accessToken);
+            string roomId = roomToAnalyze;
 
             var messages = await GetMessages(accessToken, roomId, 1000);
 
@@ -134,11 +141,6 @@ namespace Breeze.ChatSummary
             dynamic json = JsonConvert.DeserializeObject(responseBody);
             JArray messages = json.chunk;
             return FilteredMessages(messages);
-        }
-
-        private string GetRoomId(string accessToken)
-        {
-            return roomToAnalyze.ID;
         }
 
         private List<MatrixMessage> FilteredMessages(JArray messages)
