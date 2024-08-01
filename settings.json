@@ -1,21 +1,22 @@
 {
-    "matrixConfig": {
-      "ACCESS_TOKEN": "",
-      "HOMESERVER": "",
-      "PASSWORD": "",
-      "USERNAME": "",
-      "ROOMS": [
-        {
-          "ID": "",
-          "Name": ""
-        }
-      ]
-    },
-    "ollamaApi": {
-      "API_ENDPOINT_URL": ""
-    },
-    "azureApi": {
-      "API_KEY": "",
-      "API_ENDPOINT_URL": ""
-    }
-  }
+  "MatrixConfig": {
+    "ACCESS_TOKEN": "",
+    "HOMESERVER": "",
+    "PASSWORD": "",
+    "USERNAME": "",
+    "SOURCE_ROOM_ID": "",
+    "DESTINATION_ROOM_ID": ""
+  },
+  "OllamaApi": {
+    "API_ENDPOINT_URL": "",
+    "MODEL": ""
+  },
+  "AzureAPI": {
+    "API_KEY": "",
+    "API_ENDPOINT_URL": ""
+  },
+  "ClaudeApi": {
+    "API_KEY": ""
+  },
+  "API": "CLAUDE"
+}
