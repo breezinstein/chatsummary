@@ -45,7 +45,7 @@ namespace Breeze.ChatSummary
             DateTime date = DateTime.Now.AddDays(-1);
 
             Console.WriteLine("Grouping Messages...");
-            groupedMessages = GroupMessagesByAmount(hourlyMessages, 500, date);
+            groupedMessages = GroupMessagesByAmount(hourlyMessages, 1000, date);
 
             Console.WriteLine("Analyzing Text...");
             string output = await AnalyzeMessages(messageAnalyzer, groupedMessages);
@@ -74,10 +74,10 @@ namespace Breeze.ChatSummary
             {
                 return string.Empty;
             }
-            string output = $"Summary \n";
+            string output = $"Summary of {groupedMessages.Sum(x => x.Count)} messages on {groupedMessages[0].earliestMessageTimeStamp:D}\n";
             output += $"First message at {groupedMessages[0].earliestMessageTimeStamp.ToString("T")}\n";
             output += $"Last message at {groupedMessages[groupedMessages.Count - 1].latestMessageTimeStamp.ToString("T")}\n";
-            output += $"Total Messages: {groupedMessages.Sum(x => x.Count)}\n";
+            //output += $"Total Messages: {groupedMessages.Sum(x => x.Count)}\n";
             output += "\n";
             foreach (var group in groupedMessages)
             {
