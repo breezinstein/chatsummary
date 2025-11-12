@@ -28,7 +28,7 @@ namespace Breeze.ChatSummary
                     messageAnalyzer = new OllamaAnalyzer(settings.OllamaApi);
                     break;
                 case APIType.CLAUDE:
-                    messageAnalyzer = new ClaudeMessageAnalyzer(settings.ClaudeApi.API_KEY);
+                    messageAnalyzer = new ClaudeMessageAnalyzer(settings.ClaudeApi);
                     break;
                 default:
                     Console.WriteLine("No valid analyzer configured, please configure Azure API or Ollama in settings.json");

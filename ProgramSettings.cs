@@ -91,5 +91,7 @@ namespace Breeze.ChatSummary
     public struct CLAUDEAPI
     {
         public string API_KEY { get; set; }
+        public string API_ENDPOINT_URL { get; set; }
+        public string MODEL { get; set; }
     }
 }

@@ -16,7 +16,9 @@
     "API_ENDPOINT_URL": ""
   },
   "ClaudeApi": {
-    "API_KEY": ""
+    "API_KEY": "",
+    "API_ENDPOINT_URL": "",
+    "MODEL": ""
   },
   "API": "CLAUDE"
 }

@@ -8,12 +8,15 @@ namespace Breeze.ChatSummary
     public class ClaudeMessageAnalyzer : IMessageAnalyzer
     {
         private readonly string _apiKey;
-        private readonly string _apiUrl = "https://api.anthropic.com/v1/messages";
+        private readonly string _apiUrl;
         private readonly string _apiVersion = "2023-06-01";
+        private readonly string _model;
         private string prompt = "You are an expert content summarizer. You take content in and output a Markdown formatted summary, focus on the main points and takeaways. \n";
-        public ClaudeMessageAnalyzer(string apiKey)
+        public ClaudeMessageAnalyzer(CLAUDEAPI claudeApi)
         {
-            _apiKey = apiKey;
+            _apiKey = claudeApi.API_KEY;
+            _apiUrl = claudeApi.API_ENDPOINT_URL;
+            _model = claudeApi.MODEL;
         }
 
         public async Task<string> AnalyzeTextAsync(string textToAnalyze)
@@ -25,7 +28,7 @@ namespace Breeze.ChatSummary
 
             var requestBody = new
             {
-                model = "claude-3-5-sonnet-20240620",
+                model = _model,
                 max_tokens = 1024,
                 messages = new[]
                 {
@@ -51,7 +54,7 @@ namespace Breeze.ChatSummary
                 if (ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     // Handle invalid request error
-                    Console.WriteLine("Invalid request");                    
+                    Console.WriteLine("Invalid request");
                 }
                 else if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
